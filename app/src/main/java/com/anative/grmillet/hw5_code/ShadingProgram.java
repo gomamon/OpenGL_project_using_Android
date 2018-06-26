@@ -195,7 +195,7 @@ public class ShadingProgram extends GLES30Program{
         light[0].specular_color[2] = 0.8f; light[0].specular_color[3] = 1.0f;
 
         // spot_light_WC: use light 1
-        light[1].light_on = 1;
+        light[1].light_on = 0;
         light[1].position[0] = -200.0f; light[1].position[1] = 500.0f; // spot light position in WC
         light[1].position[2] = -200.0f; light[1].position[3] = 1.0f;
 
@@ -213,7 +213,26 @@ public class ShadingProgram extends GLES30Program{
         light[1].spot_cutoff_angle = 20.0f;
         light[1].spot_exponent = 8.0f;
 
+        // spot_light_WC: using light 1******//
+        light[2].light_on = 1;
+        light[2].position[0] = -200.0f; light[2].position[1] = 500.0f; // spot light position in WC
+        light[2].position[2] = -200.0f; light[2].position[3] = 1.0f;
 
+        light[2].ambient_color[0] = 0.152f; light[2].ambient_color[1] = 0.152f;
+        light[2].ambient_color[2] = 0.152f; light[2].ambient_color[3] = 1.0f;
+
+        light[2].diffuse_color[0] = 0.572f; light[2].diffuse_color[1] = 0.572f;
+        light[2].diffuse_color[2] = 0.572f; light[2].diffuse_color[3] = 1.0f;
+
+        light[2].specular_color[0] = 0.772f; light[2].specular_color[1] = 0.772f;
+        light[2].specular_color[2] = 0.772f; light[2].specular_color[3] = 1.0f;
+
+        light[2].spot_direction[0] = 0.0f; light[2].spot_direction[1] = -1.0f; // spot light direction in WC
+        light[2].spot_direction[2] = 0.0f;
+        light[2].spot_cutoff_angle = 5.0f;
+        light[2].spot_exponent = 2.0f;
+
+        //********************************//
         GLES30.glUseProgram(mId);
         GLES30.glUniform1i(locLight[0].light_on, light[0].light_on);
         GLES30.glUniform4fv(locLight[0].position, 1, BufferConverter.floatArrayToBuffer(light[0].position));
@@ -233,7 +252,8 @@ public class ShadingProgram extends GLES30Program{
 
 
         float[] spot_direction = {
-                light[1].spot_direction[0], light[1].spot_direction[1], light[1].spot_direction[2], 0.0f
+                light[1].spot_direction[0], light[1].spot_direction[1], light[1].spot_direction[2],
+                light[2].spot_direction[0], light[2].spot_direction[1], light[2].spot_direction[2]//////
         };
 
         float[] directionEC = new float[4];
@@ -243,6 +263,28 @@ public class ShadingProgram extends GLES30Program{
         GLES30.glUniform1f(locLight[1].spot_cutoff_angle, light[1].spot_cutoff_angle);
         GLES30.glUniform1f(locLight[1].spot_exponent, light[1].spot_exponent);
         GLES30.glUseProgram(0);
+
+
+        /////*****************/
+
+        GLES30.glUniform1i(locLight[2].light_on, light[2].light_on);
+        // need to supply position in EC for shading
+
+        Matrix.multiplyMV(positionEC, 0, viewMatrix, 0, light[2].position, 0);
+
+        GLES30.glUniform4fv(locLight[2].position, 1, BufferConverter.floatArrayToBuffer(positionEC));
+        GLES30.glUniform4fv(locLight[2].ambient_color, 1, BufferConverter.floatArrayToBuffer(light[1].ambient_color));
+        GLES30.glUniform4fv(locLight[2].diffuse_color, 1, BufferConverter.floatArrayToBuffer(light[1].diffuse_color));
+        GLES30.glUniform4fv(locLight[2].specular_color, 1, BufferConverter.floatArrayToBuffer(light[1].specular_color));
+
+        Matrix.multiplyMV(directionEC, 0, viewMatrix, 0, spot_direction, 0);
+
+        GLES30.glUniform3fv(locLight[2].spot_direction, 1, BufferConverter.floatArrayToBuffer(directionEC));
+        GLES30.glUniform1f(locLight[2].spot_cutoff_angle, light[2].spot_cutoff_angle);
+        GLES30.glUniform1f(locLight[2].spot_exponent, light[2].spot_exponent);
+        GLES30.glUseProgram(0);
+        ////////*************/
+
     }
 
     /*
