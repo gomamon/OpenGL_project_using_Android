@@ -181,7 +181,7 @@ public class ShadingProgram extends GLES30Program{
             light[i] = new LightParameters();
 
         // point_light_EC: use light 0
-        light[0].light_on = 0;
+        light[0].light_on = 1;
         light[0].position[0] = 0.0f; light[0].position[1] = 100.0f; 	// point light position in EC
         light[0].position[2] = 0.0f; light[0].position[3] = 1.0f;
 
@@ -195,7 +195,7 @@ public class ShadingProgram extends GLES30Program{
         light[0].specular_color[2] = 0.8f; light[0].specular_color[3] = 1.0f;
 
         // spot_light_WC: use light 1
-        light[1].light_on = 0;
+        light[1].light_on = 1;
         light[1].position[0] = -200.0f; light[1].position[1] = 500.0f; // spot light position in WC
         light[1].position[2] = -200.0f; light[1].position[3] = 1.0f;
 
@@ -214,7 +214,7 @@ public class ShadingProgram extends GLES30Program{
         light[1].spot_exponent = 8.0f;
 
         // spot_light_WC: using light 1******//
-        light[2].light_on = 1;
+        light[2].light_on = 0;
         light[2].position[0] = -200.0f; light[2].position[1] = 500.0f; // spot light position in WC
         light[2].position[2] = -200.0f; light[2].position[3] = 1.0f;
 

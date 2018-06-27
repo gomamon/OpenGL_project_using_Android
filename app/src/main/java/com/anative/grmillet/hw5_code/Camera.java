@@ -156,13 +156,14 @@ public class Camera {
     }
 
     public float getFovy(){
+
         return fovy;
     }
 
     public void Zoom(float delta) {
         if(fovy>fovy_MIN && fovy<fovy_MAX) fovy += delta * 0.1f;
-        else if(fovy>=fovy_MIN && delta<0)   fovy += delta * 0.1f;
-        else if(fovy<=fovy_MAX && delta>0)   fovy +=delta * 0.1f;
+        else if(fovy<=fovy_MIN && delta>0)   fovy += delta * 0.1f;
+        else if(fovy>=fovy_MAX && delta<0)   fovy +=delta * 0.1f;
 
     }
     public void nomalize(float[] vec) {

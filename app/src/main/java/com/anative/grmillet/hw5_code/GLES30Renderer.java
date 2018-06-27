@@ -14,6 +14,9 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
 
     Camera mCamera;
     private Mario mMario;
+    private Cow mCow;
+    private IronMan mIronMan;
+    private Bus mBus;
 
     public float ratio = 1.0f;
     public int headLightFlag = 1;
@@ -30,6 +33,9 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
     public float[] mModelViewInvTrans = new float[16];
 
     final static int TEXTURE_ID_MARIO = 0;
+    final static int TEXTURE_ID_COW = 1;
+    final static int TEXTURE_ID_IRONMAN = 2;
+    final static int TEXTURE_ID_BUS = 3;
 
     private ShadingProgram mShadingProgram;
 
@@ -64,11 +70,29 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
         /*
                 우리가 만든 Object들을 로드.
          */
+
+        /////////////load cow /////////
+        mCow = new Cow();
+        mCow.addGeometry(AssetReader.readGeometry("Cow_triangles_vn.geom", nBytesPerTriangles, mContext));
+        mCow.prepare();
+        mCow.setTexture(AssetReader.getBitmapFromFile("grass_tex.jpg", mContext), TEXTURE_ID_COW);
+
+        //////////load tiger////////
+        mIronMan = new IronMan();
+        mIronMan.addGeometry(AssetReader.readGeometry("IronMan.geom", nBytesPerTriangles, mContext));
+        mIronMan.prepare();
+        mIronMan.setTexture(AssetReader.getBitmapFromFile("cocacola_tex.jpg", mContext), TEXTURE_ID_IRONMAN);
+        //////////////load building////////////////////////
+        mBus = new Bus();
+        mBus.addGeometry(AssetReader.readGeometry("Bus.geom", nBytesPerTriangles, mContext));
+        mBus.prepare();
+        mBus.setTexture(AssetReader.getBitmapFromFile("cracker_tex.jpg", mContext), TEXTURE_ID_BUS);
+
+
         mMario = new Mario();
         mMario.addGeometry(AssetReader.readGeometry("Mario_Triangle.geom", nBytesPerTriangles, mContext));
         mMario.prepare();
         mMario.setTexture(AssetReader.getBitmapFromFile("mario.jpg", mContext), TEXTURE_ID_MARIO);
-
 
     }
 
@@ -102,12 +126,52 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
          */
         mShadingProgram.use(); // 이 프로그램을 사용해 그림을 그릴 것입니다.
 
+        ////////////////////////////////////////////////////////////////
         Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.scaleM(mModelMatrix, 0, 8.0f, 8.0f, 8.0f);
+        Matrix.translateM(mModelMatrix, 0, 0.0f, -1.0f, 0.0f);;
 
-        Matrix.rotateM(mModelMatrix, 0, 90.0f, 1f, 0f, 0f);
-        Matrix.rotateM(mModelMatrix, 0, 180.0f, 0f, 1f, 0f);
-        Matrix.scaleM(mModelMatrix, 0, 1.0f, 1.0f, 1.0f);
+        Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
+        Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
+        Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
+
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mBus.mTexId[0]);
+        GLES30.glUniform1i(mShadingProgram.locTexture, TEXTURE_ID_BUS);
+        mBus.draw();
+
+
+
+        Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, 0.0f);
+        Matrix.rotateM(mModelMatrix, 0, 5.0f*timestamp, 0f, 1f, 0f);
+        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+        Matrix.scaleM(mModelMatrix, 0, 5.0f, 5.0f, 5.0f);
+
+        Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
+        Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
+        Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
+
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mCow.mTexId[0]);
+        GLES30.glUniform1i(mShadingProgram.locTexture, TEXTURE_ID_COW);
+        mCow.draw();
+        //계층적 모델링/////
+
+       // Matrix.setIdentityM(mModelMatrix, 0);
+
+        Matrix.rotateM(mModelMatrix, 0, -20.0f*timestamp, 1f, 0f, 0f);
+        Matrix.rotateM(mModelMatrix, 0, 180.0f, 0f, 1f, 0f);
+        Matrix.scaleM(mModelMatrix, 0, 0.1f, 0.1f, 0.1f);
+        Matrix.translateM(mModelMatrix, 0, 0.5f, 2.5f, 0.0f);
 
         Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
@@ -123,6 +187,45 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
 
         mShadingProgram.setUpMaterialMario();
         mMario.draw();
+
+
+        ////////////////////
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.rotateM(mModelMatrix, 0, -10.0f*timestamp, 0f, 0f, 1f);
+        Matrix.scaleM(mModelMatrix, 0, 1.0f, 1.0f, 1.0f);
+        Matrix.translateM(mModelMatrix, 0, -5.0f, 0.0f, 0.0f);
+
+        Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
+        Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
+        Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
+
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mIronMan.mTexId[0]);
+        GLES30.glUniform1i(mShadingProgram.locTexture, TEXTURE_ID_IRONMAN);
+        mIronMan.draw();
+
+        /////////////////////
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.scaleM(mModelMatrix, 0, 1.0f, 1.0f, 1.0f);
+        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, 0.0f);
+
+        Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
+        Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
+        Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
+        GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
+
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mIronMan.mTexId[0]);
+        GLES30.glUniform1i(mShadingProgram.locTexture, TEXTURE_ID_IRONMAN);
+        mIronMan.draw();
+        ///////////////////////
 
 
     }
