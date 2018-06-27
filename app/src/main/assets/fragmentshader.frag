@@ -2,7 +2,7 @@
 
 precision highp float;
 
-#define NUMBER_OF_LIGHTS_SUPPORTED 4
+#define NUMBER_OF_LIGHTS_SUPPORTED 3
 
 uniform vec4 global_ambient_color;
 
