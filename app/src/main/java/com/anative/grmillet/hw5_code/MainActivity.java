@@ -117,6 +117,7 @@ class SurfaceView extends GLSurfaceView{
     public float previousX[] = new float[2], currentX[] = new float[2], deltaX;
     public float previousY[] = new float[2], currentY[] = new float[2], deltaY;
     int animIndex = 0;
+    boolean afterZoom = false;
     float angle = 0;
 
     public SurfaceView(Context context){
@@ -135,15 +136,21 @@ class SurfaceView extends GLSurfaceView{
         final int SENSITIVITY = 5;// 이벤트를 발생시킬지 기준이 되는 값
 
         switch (e.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_UP:
+                afterZoom = false;
+                break;
             case MotionEvent.ACTION_DOWN:
+
                 for (int i = 0; i < e.getPointerCount(); i++) {
                     currentX[i] = e.getX(i);
                     currentY[i] = e.getY(i);
                     previousX[i] = currentX[i];
                     previousY[i] = currentY[i];
                 }
+
                 break;
             case MotionEvent.ACTION_MOVE: // touch move
+
                 for (int i = 0; i < e.getPointerCount(); i++) {
                     previousX[i] = currentX[i];
                     previousY[i] = currentY[i];
@@ -157,36 +164,34 @@ class SurfaceView extends GLSurfaceView{
                 deltaY = currentY[0] - previousY[0];
 
                 if (e.getPointerCount() == 1) {
+                    if(!afterZoom) {
+                        previousX[1] = previousX[0];
+                        currentX[1] = currentX[0];
 
-                    previousX[1] = previousX[0];
-                    currentX[1] = currentX[0];
+                        if (MainActivity.leftButton.isChecked() == true) {
+                            if (Math.abs(deltaY) > SENSITIVITY)
+                                mRenderer.mCamera.MoveUpward(deltaY);
+                            if (Math.abs(deltaX) > SENSITIVITY)
+                                mRenderer.mCamera.MoveSideward(-deltaX);
+                        } else if (MainActivity.middleButton1.isChecked() == true) {
+                            if (Math.abs(deltaY) > SENSITIVITY)
+                                mRenderer.mCamera.Pitch(deltaY);
+                            if (Math.abs(deltaX) > SENSITIVITY)
+                                mRenderer.mCamera.Yaw(deltaX);
 
-                    if (MainActivity.leftButton.isChecked() == true) {
-                        if (Math.abs(deltaY) > SENSITIVITY)
-                            mRenderer.mCamera.MoveUpward(deltaY);
-                        if (Math.abs(deltaX) > SENSITIVITY)
-                            mRenderer.mCamera.MoveSideward(-deltaX);
-                    }
-
-                    else if (MainActivity.middleButton1.isChecked() == true) {
-                        if (Math.abs(deltaY) > SENSITIVITY)
-                            mRenderer.mCamera.Pitch(deltaY);
-                        if (Math.abs(deltaX) > SENSITIVITY)
-                            mRenderer.mCamera.Yaw(deltaX);
-
-                    } else if (MainActivity.middleButton2.isChecked() == true) {
-                        if (Math.abs(deltaY) > SENSITIVITY)
-                            mRenderer.mCamera.MoveForward(deltaY);
-
-                    } else if (MainActivity.rightButton.isChecked() == true) {
-                        if (Math.abs(deltaX) > SENSITIVITY)
-                            mRenderer.mCamera.Roll(deltaX);
+                        } else if (MainActivity.middleButton2.isChecked() == true) {
+                            if (Math.abs(deltaY) > SENSITIVITY)
+                                mRenderer.mCamera.MoveForward(deltaY);
+                        } else if (MainActivity.rightButton.isChecked() == true) {
+                            if (Math.abs(deltaX) > SENSITIVITY)
+                                mRenderer.mCamera.Roll(deltaX);
+                        }
                     }
 
                 } else if (e.getPointerCount() == 2) {
                     float pre = Math.abs(previousX[0] - previousX[1]);
                     float cur = Math.abs(currentX[0] - currentX[1]);
-
+                    afterZoom = true;
                     if (pre - cur > SENSITIVITY)
                         mRenderer.mCamera.Zoom(20);
                     else if (pre - cur < -1 * SENSITIVITY)
