@@ -32,6 +32,7 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
     public float[] mViewMatrix = new float[16];
     public float[] mModelViewInvTrans = new float[16];
 
+
     final static int TEXTURE_ID_MARIO = 0;
     final static int TEXTURE_ID_COW = 1;
     final static int TEXTURE_ID_IRONMAN = 2;
@@ -124,6 +125,9 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
         /*
          그리기 영역.
          */
+        //mShadingProgram.initLightsAndMaterial();
+        mShadingProgram.initFlags();
+        mShadingProgram.set_up_scene_lights(mViewMatrix);
         mShadingProgram.use(); // 이 프로그램을 사용해 그림을 그릴 것입니다.
 
         ////////////////////////////////////////////////////////////////
@@ -151,7 +155,6 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
         Matrix.rotateM(mModelMatrix, 0, 5.0f*timestamp, 0f, 1f, 0f);
         Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, 2.0f);
         Matrix.scaleM(mModelMatrix, 0, 5.0f, 5.0f, 5.0f);
-
         Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
         Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
@@ -164,6 +167,22 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mCow.mTexId[0]);
         GLES30.glUniform1i(mShadingProgram.locTexture, TEXTURE_ID_COW);
         mCow.draw();
+        ///////////////////////////////////
+        float[] positionEC = new float[4];
+        Matrix.multiplyMV(positionEC, 0, mModelViewMatrix, 0, mShadingProgram.light[2].position, 0);
+
+        float[] spot_direction = new float[4];
+        GLES30.glUniform4fv(mShadingProgram.locLight[2].position, 1, BufferConverter.floatArrayToBuffer(positionEC));
+        spot_direction[0] = mShadingProgram.light[2].spot_direction[0];
+        spot_direction[1] = mShadingProgram.light[2].spot_direction[1];
+        spot_direction[2] = mShadingProgram.light[2].spot_direction[2];
+        spot_direction[3] = 0.0f;
+
+        float[] directionEC = new float[4];
+        Matrix.multiplyMV(directionEC, 0, mModelViewMatrix, 0, spot_direction, 0);
+
+        GLES30.glUniform3fv(mShadingProgram.locLight[2].spot_direction, 1, BufferConverter.floatArrayToBuffer(directionEC));
+        //////////////////////////
         //계층적 모델링/////
 
        // Matrix.setIdentityM(mModelMatrix, 0);
@@ -199,6 +218,7 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
         Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
         Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
 
         GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
         GLES30.glUniformMatrix4fv(mShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);

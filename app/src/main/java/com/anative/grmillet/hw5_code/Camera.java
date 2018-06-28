@@ -20,8 +20,8 @@ public class Camera {
     // //////////////////////////////////////////////////////////////////////
     public Camera() { // initial Value
         pos[0] = 0.0f;
-        pos[1] = 2.0f;
-        pos[2] = 10.0f;
+        pos[1] = 2.5f;
+        pos[2] = 16.0f;
         uAxis[0] = 1.0f;
         uAxis[1] = 0.0f;
         uAxis[2] = 0.0f;
@@ -161,9 +161,9 @@ public class Camera {
     }
 
     public void Zoom(float delta) {
-        if(fovy>fovy_MIN && fovy<fovy_MAX) fovy += delta * 0.1f;
-        else if(fovy<=fovy_MIN && delta>0)   fovy += delta * 0.1f;
-        else if(fovy>=fovy_MAX && delta<0)   fovy +=delta * 0.1f;
+        fovy += delta * 0.1f;
+        if(fovy<fovy_MIN )   fovy = fovy_MIN;
+        else if(fovy>fovy_MAX )   fovy = fovy_MAX;
 
     }
     public void nomalize(float[] vec) {
